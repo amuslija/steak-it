@@ -17,10 +17,13 @@
     "@remix-run/node": "^2.6.0",
     "@remix-run/react": "^2.6.0",
     "@remix-run/serve": "^2.6.0",
+    "autoprefixer": "^10.4.17",
+    "aws-sdk": "^2.1559.0",
     "isbot": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "remix-utils": "^7.5.0"
+    "remix-utils": "^7.5.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@remix-run/dev": "^2.6.0",

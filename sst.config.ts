@@ -1,20 +1,25 @@
 import type { SSTConfig } from 'sst';
-import { RemixSite, StackContext, Table } from 'sst/constructs';
+import { RemixSite, StackContext, Table, use } from 'sst/constructs';
 
 const DB = ({ stack }: StackContext) => {
   const guessesTable = new Table(stack, 'GuessesTable', {
     fields: {
       userId: 'string',
+      guess: 'string',
       score: 'number',
+      lastPrice: 'string',
     },
-    primaryIndex: { partitionKey: 'userId', sortKey: 'score' },
+    primaryIndex: { partitionKey: 'userId' },
   });
 
   return guessesTable;
 };
 
 const Site = ({ stack }: StackContext) => {
-  const site = new RemixSite(stack, 'SteakItSite');
+  const DBStack = use(DB);
+  const site = new RemixSite(stack, 'SteakItSite', {
+    bind: [DBStack],
+  });
   stack.addOutputs({
     url: site.url,
   });
