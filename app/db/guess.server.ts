@@ -13,6 +13,8 @@ const GuessSchema = z.object({
 
 const client = new AWS.DynamoDB.DocumentClient();
 
+export type GuessType = z.infer<typeof GuessSchema>;
+
 export const createNewUser = async () => {
   const guess = GuessSchema.parse({
     userId: randomUUID(),
