@@ -25,6 +25,7 @@ module.exports = {
         'plugin:react/jsx-runtime',
         'plugin:react-hooks/recommended',
         'plugin:jsx-a11y/recommended',
+        'plugin:tailwindcss/recommended',
         'prettier',
       ],
       settings: {
@@ -67,6 +68,7 @@ module.exports = {
         'plugin:@typescript-eslint/stylistic',
         'plugin:import/recommended',
         'plugin:import/typescript',
+        'plugin:tailwindcss/recommended',
         'prettier',
       ],
       rules: {
@@ -81,6 +83,7 @@ module.exports = {
         'react/react-in-jsx-scope': 'off',
         'react/jsx-uses-react': 'off',
         '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+        'react/prop-types': 'off',
       },
     },
 

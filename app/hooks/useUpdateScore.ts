@@ -7,6 +7,7 @@ export type GuessResult = {
   guess: string;
   lastPrice: string;
   guessResult: string;
+  diff: number;
 };
 
 export const useUpdateScore = <T extends { userId: string }>(

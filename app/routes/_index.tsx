@@ -6,8 +6,24 @@ import {
   type ActionFunctionArgs,
 } from '@remix-run/node';
 import { useFetcher, useLoaderData, useRevalidator } from '@remix-run/react';
+import {
+  ArrowBigUp,
+  ArrowBigDown,
+  Loader,
+  ThumbsUp,
+  ThumbsDown,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from '~/components/ui/card';
 import { createNewUser, getUser, submitGuess } from '~/db/guess.server';
 import { GuessResult, useUpdateScore } from '~/hooks/useUpdateScore';
 import { commitSession, getSession } from '~/sessions';
@@ -73,20 +89,30 @@ const GuessBox = ({
     }
   }, [score, guessState, onResultChange]);
 
-  return <div>Spinner is spinning</div>;
+  return (
+    <div className="max-w-md">
+      <Alert>
+        <Loader className="size-4 animate-spin" />
+        <AlertTitle>Checking Bitcoin price, please wait...</AlertTitle>
+      </Alert>
+    </div>
+  );
 };
 
 const GuessResultBoard = ({ result }: { result: GuessResult }) => {
+  const hasWon = result.guessResult === result.guess;
+
   return (
-    <div>
-      <h2>Result:</h2>
-      <p>
-        Your guess was: {result.guess} and the result was {result.guessResult}
-      </p>
-      <p>
-        The last price was {result.lastPrice} and the current price is{' '}
-        {result.currentPrice}
-      </p>
+    <div className="">
+      <Alert variant={`${hasWon ? 'success' : 'destructive'}`}>
+        {hasWon ? <ThumbsUp /> : <ThumbsDown />}
+        <AlertTitle>{hasWon ? 'You won!' : 'You lost!'}</AlertTitle>
+        <AlertDescription>
+          {hasWon
+            ? `The price went ${result.guess} by ${result.diff.toFixed(2)} $USD`
+            : `You were off by ${result.diff.toFixed(2)} $USD`}
+        </AlertDescription>
+      </Alert>
     </div>
   );
 };
@@ -94,6 +120,7 @@ const GuessResultBoard = ({ result }: { result: GuessResult }) => {
 export default function Index() {
   const fetcher = useFetcher<typeof action>();
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
+  const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const data = useLoaderData<typeof loader>();
   const [hasVoted, setHasVoted] = useState(false);
   const rev = useRevalidator();
@@ -101,42 +128,69 @@ export default function Index() {
   useEffect(() => {
     if (guessResult && hasVoted) {
       setHasVoted(false);
+      setVote(null);
       rev.revalidate();
     }
   }, [guessResult, rev, hasVoted]);
 
   return (
-    <div className="flex flex-col items-center">
-      <h1>🥩 Steak it:</h1>
-      <p>
-        Guess the price of Bitcoin and win a steak! The highest weekly score
-        gets a free steak.
-      </p>
-      <div>
-        <h1>Your current score is: {data.score}!</h1>
+    <div className="flex h-screen flex-col items-center justify-center">
+      <div className="mb-24 flex flex-row text-8xl font-semibold">
+        <h1 className="mr-5 animate-bounce">🥩</h1>
+        <h1> STEAK IT</h1>
       </div>
-      <fetcher.Form method="POST">
-        <input
-          type="submit"
-          name="up"
-          value="UP"
-          className="border border-solid rounded-sm p-2 mx-2"
-          onClick={() => {
-            setHasVoted(true);
-            setGuessResult(null);
-          }}
-        />
-        <input
-          type="submit"
-          name="down"
-          value="DOWN"
-          className="border border-solid rounded-sm p-2 mx-2"
-          onClick={() => {
-            setHasVoted(true);
-            setGuessResult(null);
-          }}
-        />
-      </fetcher.Form>
+      <div className="mb-5">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex flex-row justify-between gap-5">
+              <span>Guess the price of Bitcoin and win a steak!</span>
+            </CardTitle>
+            <CardDescription>
+              The highest weekly score gets a free steak.
+              <div className=""></div>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-row items-center justify-between">
+              <fetcher.Form method="POST">
+                <Button
+                  type="submit"
+                  name="up"
+                  value="up"
+                  className="mx-2 rounded-sm border border-solid p-2"
+                  variant={vote === 'down' ? 'outline' : 'default'}
+                  onClick={() => {
+                    setHasVoted(true);
+                    setGuessResult(null);
+                    setVote('up');
+                  }}
+                >
+                  <ArrowBigUp />
+                  Price will rise
+                </Button>
+                <Button
+                  type="submit"
+                  name="down"
+                  value="DOWN"
+                  className="mx-2 rounded-sm border border-solid p-2"
+                  variant={vote === 'up' ? 'outline' : 'default'}
+                  onClick={() => {
+                    setHasVoted(true);
+                    setGuessResult(null);
+                    setVote('down');
+                  }}
+                >
+                  <ArrowBigDown />
+                  Price will fall
+                </Button>
+              </fetcher.Form>
+              <span className="text-2xl font-semibold">
+                Score: {data.score}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       {hasVoted ? <GuessBox onResultChange={setGuessResult} /> : null}
       {guessResult ? <GuessResultBoard result={guessResult} /> : null}
     </div>

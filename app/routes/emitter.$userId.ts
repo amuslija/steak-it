@@ -47,6 +47,7 @@ export const loader: LoaderFunction = ({ request, params }) => {
           currentPrice,
           guess: user.guess,
           lastPrice: user.lastPrice,
+          diff: Math.abs(Number(currentPrice) - Number(user.lastPrice)),
           guessResult,
         };
         send({

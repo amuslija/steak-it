@@ -63,8 +63,6 @@ export const submitGuess = async (userId: string, guess: 'up' | 'down') => {
     })
     .promise();
 
-  console.log('guess submitted');
-
   return GuessSchema.parse(Attributes);
 };
 
