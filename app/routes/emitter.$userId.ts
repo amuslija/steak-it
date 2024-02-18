@@ -1,11 +1,7 @@
 import { LoaderFunction } from '@remix-run/node';
 import { eventStream } from 'remix-utils/sse/server';
-// import { interval } from 'remix-utils/timers';
 
 import { getUser, updateScore } from '~/db/guess.server';
-
-const sleep = (sec: number) =>
-  new Promise((resolve) => setTimeout(resolve, sec * 1000));
 
 export const loader: LoaderFunction = ({ request, params }) => {
   const userId = params.userId;
@@ -15,14 +11,10 @@ export const loader: LoaderFunction = ({ request, params }) => {
   }
 
   return eventStream(request.signal, (send, close) => {
-    let initialWait = true;
+    let coreTimeout: NodeJS.Timeout;
 
-    const interval = setInterval(async () => {
-      if (initialWait) {
-        initialWait = false;
-        await sleep(5);
-      }
-
+    const coreLoop = async () => {
+      console.log('looping');
       const current = await fetch(
         'https://api.coincap.io/v2/rates/bitcoin',
       ).then((res) => res.json());
@@ -32,13 +24,16 @@ export const loader: LoaderFunction = ({ request, params }) => {
       const user = await getUser(userId);
 
       if (!user || user.guess === 'idle' || !user.lastPrice) {
+        coreTimeout = setTimeout(coreLoop, 1000);
         return;
       }
 
       try {
         if (user.lastPrice === currentPrice) {
+          setTimeout(coreLoop, 1000);
           return;
         }
+
         const guessResult =
           Number(currentPrice) > Number(user.lastPrice) ? 'up' : 'down';
         await updateScore(userId, guessResult === user.guess ? 1 : 0);
@@ -59,11 +54,16 @@ export const loader: LoaderFunction = ({ request, params }) => {
           close();
         }
       }
-    }, 500);
+    };
+
+    const initialTimeout = setTimeout(() => {
+      console.log('starting');
+      coreLoop();
+    }, 60000);
 
     return () => {
-      initialWait = true;
-      clearInterval(interval);
+      clearTimeout(initialTimeout);
+      clearTimeout(coreTimeout);
     };
   });
 };

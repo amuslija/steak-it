@@ -26,11 +26,11 @@ import {
 } from '~/components/ui/card';
 import { createNewUser, getUser, submitGuess } from '~/db/guess.server';
 import { GuessResult, useUpdateScore } from '~/hooks/useUpdateScore';
-import { commitSession, getSession } from '~/sessions';
+import { commitSession, destroySession, getSession } from '~/sessions';
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'Steak It' },
+    { title: '🥩 Steak It' },
     { name: 'description', content: 'Guess crypto prices and win steaks' },
   ];
 };
@@ -40,7 +40,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const userId = session.get('userId');
   if (!userId) {
     const user = await createNewUser();
-
     session.set('userId', user.userId);
     return redirect('/', {
       headers: {
@@ -48,27 +47,35 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
     });
   }
+
   const user = await getUser(userId);
 
   if (!user) {
-    throw new Error('test');
+    throw new Response('User not found', {
+      status: 404,
+      headers: {
+        'Set-Cookie': await destroySession(session),
+      },
+    });
   }
 
   return json(user);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log('action');
   const session = await getSession(request.headers.get('Cookie'));
   const userId = session.get('userId');
 
+  console.log('userId');
   if (!userId) {
+    console.log('olaa');
     throw new Error('No user id provided');
   }
 
   const data = await request.formData();
   const vote = data.get('up') ? 'up' : 'down';
   const guess = await submitGuess(userId, vote);
-
   return json(guess);
 };
 
@@ -156,7 +163,7 @@ export default function Index() {
                   value="up"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'down' ? 'outline' : 'default'}
-                  disabled={!!vote}
+                  disabled={fetcher.state !== 'idle'}
                   onClick={() => {
                     setGuessResult(null);
                     setVote('up');
@@ -171,7 +178,7 @@ export default function Index() {
                   value="DOWN"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'up' ? 'outline' : 'default'}
-                  disabled={!!vote}
+                  disabled={fetcher.state !== 'idle'}
                   onClick={() => {
                     setGuessResult(null);
                     setVote('down');
@@ -193,3 +200,19 @@ export default function Index() {
     </div>
   );
 }
+
+export const ErrorBoundary = () => {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center">
+      <div className="mb-12 flex flex-row text-5xl font-semibold">
+        <h1 className="mr-5 animate-pulse">😭</h1>
+        <h1>SOMETHING WENT WRONG</h1>
+      </div>
+      <div>
+        <span className="text-xl font-semibold">
+          Please refresh your browser window. Who knows, you might win a steak.
+        </span>
+      </div>
+    </div>
+  );
+};
