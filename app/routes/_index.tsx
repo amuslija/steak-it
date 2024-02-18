@@ -122,16 +122,14 @@ export default function Index() {
   const [guessResult, setGuessResult] = useState<GuessResult | null>(null);
   const [vote, setVote] = useState<'up' | 'down' | null>(null);
   const data = useLoaderData<typeof loader>();
-  const [hasVoted, setHasVoted] = useState(false);
   const rev = useRevalidator();
 
   useEffect(() => {
-    if (guessResult && hasVoted) {
-      setHasVoted(false);
+    if (guessResult && vote) {
       setVote(null);
       rev.revalidate();
     }
-  }, [guessResult, rev, hasVoted]);
+  }, [guessResult, vote, rev]);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center">
@@ -147,7 +145,6 @@ export default function Index() {
             </CardTitle>
             <CardDescription>
               The highest weekly score gets a free steak.
-              <div className=""></div>
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -159,8 +156,8 @@ export default function Index() {
                   value="up"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'down' ? 'outline' : 'default'}
+                  disabled={!!vote}
                   onClick={() => {
-                    setHasVoted(true);
                     setGuessResult(null);
                     setVote('up');
                   }}
@@ -174,8 +171,8 @@ export default function Index() {
                   value="DOWN"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'up' ? 'outline' : 'default'}
+                  disabled={!!vote}
                   onClick={() => {
-                    setHasVoted(true);
                     setGuessResult(null);
                     setVote('down');
                   }}
@@ -191,7 +188,7 @@ export default function Index() {
           </CardContent>
         </Card>
       </div>
-      {hasVoted ? <GuessBox onResultChange={setGuessResult} /> : null}
+      {vote ? <GuessBox onResultChange={setGuessResult} /> : null}
       {guessResult ? <GuessResultBoard result={guessResult} /> : null}
     </div>
   );

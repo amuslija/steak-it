@@ -11,7 +11,9 @@
     "typecheck": "tsc",
     "sst:deploy": "sst deploy",
     "sst:dev": "sst dev",
-    "test:integration": "sst bind vitest run test/integration"
+    "test:integration": "sst bind vitest run test/integration",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.2",
@@ -34,7 +36,9 @@
   },
   "devDependencies": {
     "@remix-run/dev": "^2.6.0",
+    "@testing-library/cypress": "^10.0.1",
     "@testing-library/react": "^14.2.1",
+    "@types/node": "^20.11.19",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
