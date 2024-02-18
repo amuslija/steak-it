@@ -6,16 +6,10 @@ import {
   type ActionFunctionArgs,
 } from '@remix-run/node';
 import { useFetcher, useLoaderData, useRevalidator } from '@remix-run/react';
-import {
-  ArrowBigUp,
-  ArrowBigDown,
-  Loader,
-  ThumbsUp,
-  ThumbsDown,
-} from 'lucide-react';
+import { isbot } from 'isbot';
+import { ArrowBigUp, ArrowBigDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -25,8 +19,11 @@ import {
   CardDescription,
 } from '~/components/ui/card';
 import { createNewUser, getUser, submitGuess } from '~/db/guess.server';
-import { GuessResult, useUpdateScore } from '~/hooks/useUpdateScore';
-import { commitSession, destroySession, getSession } from '~/sessions';
+import { GuessResult } from '~/hooks/useUpdateScore';
+import { commitSession, destroySession, getSession } from '~/sessions.server';
+
+import { GuessBox } from '../components/GuessBox';
+import { GuessResultBoard } from '../components/GuessResultBoard';
 
 export const meta: MetaFunction = () => {
   return [
@@ -36,6 +33,10 @@ export const meta: MetaFunction = () => {
 };
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  if (isbot(request.headers.get('user-agent') || '')) {
+    return new Response('bots allowed', { status: 200 });
+  }
+
   const session = await getSession(request.headers.get('Cookie'));
   const userId = session.get('userId');
   if (!userId) {
@@ -63,13 +64,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  console.log('action');
   const session = await getSession(request.headers.get('Cookie'));
   const userId = session.get('userId');
 
-  console.log('userId');
   if (!userId) {
-    console.log('olaa');
     throw new Error('No user id provided');
   }
 
@@ -77,51 +75,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const vote = data.get('up') ? 'up' : 'down';
   const guess = await submitGuess(userId, vote);
   return json(guess);
-};
-
-const GuessBox = ({
-  onResultChange,
-}: {
-  onResultChange: (score: GuessResult | null) => void;
-}) => {
-  const { score, guessState } = useUpdateScore();
-
-  useEffect(() => {
-    onResultChange(null);
-  }, [onResultChange]);
-
-  useEffect(() => {
-    if (guessState === 'done' && score) {
-      onResultChange(score);
-    }
-  }, [score, guessState, onResultChange]);
-
-  return (
-    <div className="max-w-md">
-      <Alert>
-        <Loader className="size-4 animate-spin" />
-        <AlertTitle>Checking Bitcoin price, please wait...</AlertTitle>
-      </Alert>
-    </div>
-  );
-};
-
-const GuessResultBoard = ({ result }: { result: GuessResult }) => {
-  const hasWon = result.guessResult === result.guess;
-
-  return (
-    <div className="">
-      <Alert variant={`${hasWon ? 'success' : 'destructive'}`}>
-        {hasWon ? <ThumbsUp /> : <ThumbsDown />}
-        <AlertTitle>{hasWon ? 'You won!' : 'You lost!'}</AlertTitle>
-        <AlertDescription>
-          {hasWon
-            ? `The price went ${result.guess} by ${result.diff.toFixed(2)} $USD`
-            : `You were off by ${result.diff.toFixed(2)} $USD`}
-        </AlertDescription>
-      </Alert>
-    </div>
-  );
 };
 
 export default function Index() {

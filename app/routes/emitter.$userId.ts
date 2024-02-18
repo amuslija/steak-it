@@ -14,7 +14,6 @@ export const loader: LoaderFunction = ({ request, params }) => {
     let coreTimeout: NodeJS.Timeout;
 
     const coreLoop = async () => {
-      console.log('looping');
       const current = await fetch(
         'https://api.coincap.io/v2/rates/bitcoin',
       ).then((res) => res.json());
@@ -52,14 +51,15 @@ export const loader: LoaderFunction = ({ request, params }) => {
       } catch (e) {
         if (e instanceof TypeError) {
           close();
+        } else {
+          throw e;
         }
       }
     };
 
     const initialTimeout = setTimeout(() => {
-      console.log('starting');
       coreLoop();
-    }, 60000);
+    }, 1000);
 
     return () => {
       clearTimeout(initialTimeout);

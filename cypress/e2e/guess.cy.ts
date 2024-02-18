@@ -14,7 +14,6 @@ describe('guess the price', () => {
     cy.fixture('loseResult.json').then((priceEvent) => {
       cy.intercept('/emitter/**', (req) => {
         req.on('response', (res) => {
-          // Wait for delay in milliseconds before sending the response to the client.
           res.setDelay(1000);
         });
         req.reply(`event: result\ndata: ${JSON.stringify(priceEvent)}\n\n`, {
@@ -43,7 +42,6 @@ describe('guess the price', () => {
     cy.fixture('winResult.json').then((priceEvent) => {
       cy.intercept('/emitter/**', (req) => {
         req.on('response', (res) => {
-          // Wait for delay in milliseconds before sending the response to the client.
           res.setDelay(1000);
         });
         req.reply(`event: result\ndata: ${JSON.stringify(priceEvent)}\n\n`, {
@@ -70,5 +68,13 @@ describe('guess the price', () => {
         );
       },
     );
+  });
+
+  it('should show error screen in case of error', () => {
+    cy.visit('/');
+    cy.setCookie('__session', 'invalid');
+    cy.findByText('Price will rise').as('up');
+    cy.get('@up').click();
+    cy.findByText('SOMETHING WENT WRONG');
   });
 });
