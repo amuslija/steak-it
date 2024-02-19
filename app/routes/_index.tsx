@@ -27,7 +27,7 @@ import { GuessResultBoard } from '../components/GuessResultBoard';
 
 export const meta: MetaFunction = () => {
   return [
-    { title: '🥩 Steak It' },
+    { title: 'Steak It' },
     { name: 'description', content: 'Guess crypto prices and win steaks' },
   ];
 };
