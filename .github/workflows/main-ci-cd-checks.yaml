@@ -25,7 +25,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
       - name: Install dependencies
         run: pnpm install
       - name: Generate SST Types
@@ -36,6 +35,8 @@ jobs:
         run: pnpm test:unit
       - name: Integration tests
         run: pnpm test:integration
+      - name: Install cypress
+        run: pnpm install cypress
       - name: E2E Tests
         run: pnpm test:e2e
       - name: Deploy
