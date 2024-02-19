@@ -60,7 +60,7 @@ export const loader: LoaderFunction = ({ request, params }) => {
 
     const initialTimeout = setTimeout(() => {
       coreLoop();
-    }, 1000);
+    }, 60000);
 
     return () => {
       clearTimeout(initialTimeout);
