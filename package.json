@@ -13,7 +13,7 @@
     "sst:deploy": "sst deploy",
     "sst:dev": "sst dev",
     "test:unit": "vitest run app/**/*.test.tsx",
-    "test:integration": "sst bind vitest run test/integration",
+    "test:integration": "sst bind --stage test vitest run test/integration",
     "test:e2e": "start-server-and-test dev:e2e http://localhost:3000 \"pnpm cy:run\"",
     "cy:open": "cypress open",
     "cy:run": "cypress run"

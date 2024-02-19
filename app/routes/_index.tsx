@@ -60,7 +60,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
   }
 
-  return json(user);
+  const btcRate = await fetch('https://api.coincap.io/v2/rates/bitcoin').then(
+    (res) => res.json(),
+  );
+
+  return json({
+    user,
+    btcRate: btcRate.data.rateUsd,
+  });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -106,6 +113,9 @@ export default function Index() {
             <CardDescription>
               The highest weekly score gets a free steak.
             </CardDescription>
+            <CardDescription className="font-semibold">
+              Current BTC price in USD is ${Number(data.btcRate).toFixed(4)}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-row items-center justify-between">
@@ -116,10 +126,12 @@ export default function Index() {
                   value="up"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'down' ? 'outline' : 'default'}
-                  disabled={fetcher.state !== 'idle'}
-                  onClick={() => {
-                    setGuessResult(null);
+                  disabled={!!vote}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setVote('up');
+                    setGuessResult(null);
+                    fetcher.submit(e.currentTarget);
                   }}
                 >
                   <ArrowBigUp />
@@ -131,10 +143,12 @@ export default function Index() {
                   value="DOWN"
                   className="mx-2 rounded-sm border border-solid p-2"
                   variant={vote === 'up' ? 'outline' : 'default'}
-                  disabled={fetcher.state !== 'idle'}
-                  onClick={() => {
-                    setGuessResult(null);
+                  disabled={!!vote}
+                  onClick={(e) => {
+                    e.preventDefault();
                     setVote('down');
+                    setGuessResult(null);
+                    fetcher.submit(e.currentTarget);
                   }}
                 >
                   <ArrowBigDown />
@@ -142,7 +156,7 @@ export default function Index() {
                 </Button>
               </fetcher.Form>
               <span className="text-2xl font-semibold">
-                Score: {data.score}
+                Score: {data.user.score}
               </span>
             </div>
           </CardContent>

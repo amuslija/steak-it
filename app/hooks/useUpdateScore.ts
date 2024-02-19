@@ -10,11 +10,11 @@ export type GuessResult = {
   diff: number;
 };
 
-export const useUpdateScore = <T extends { userId: string }>(
+export const useUpdateScore = <T extends { user: { userId: string } }>(
   onEvent?: (score: GuessResult) => void,
 ) => {
   const loaderData = useLoaderData<T>();
-  const data = useEventSource(`/emitter/${loaderData.userId}`, {
+  const data = useEventSource(`/emitter/${loaderData.user.userId}`, {
     event: 'result',
   });
   const [score, setUpdateScore] = useState<GuessResult | null>(null);

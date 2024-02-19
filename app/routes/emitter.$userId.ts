@@ -14,6 +14,7 @@ export const loader: LoaderFunction = ({ request, params }) => {
     let coreTimeout: NodeJS.Timeout;
 
     const coreLoop = async () => {
+      console.log('in');
       const current = await fetch(
         'https://api.coincap.io/v2/rates/bitcoin',
       ).then((res) => res.json());
@@ -36,7 +37,7 @@ export const loader: LoaderFunction = ({ request, params }) => {
         const guessResult =
           Number(currentPrice) > Number(user.lastPrice) ? 'up' : 'down';
         await updateScore(userId, guessResult === user.guess ? 1 : 0);
-
+        console.log('guessResult', guessResult);
         const result = {
           currentPrice,
           guess: user.guess,

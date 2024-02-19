@@ -32,7 +32,7 @@ describe('GuessBox', () => {
       {
         path: '/',
         loader() {
-          return json({ userId: '123' });
+          return json({ user: { userId: '123' }, btcRate: '52393.9306' });
         },
         Component: Component,
       },
