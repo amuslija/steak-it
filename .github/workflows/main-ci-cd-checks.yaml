@@ -1,0 +1,42 @@
+name: PR CI Checks (Lint & Test)
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS OIDC Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::326505521097:role/steak-it-role
+          role-session-name: GHA-Steak-It-${{ github.run_id }}
+          aws-region: eu-central-1
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install
+      - name: Generate SST Types
+        run: pnpm sst types --stage test
+      - name: Linter
+        run: pnpm lint
+      - name: Unit tests
+        run: pnpm test:unit
+      - name: Integration tests
+        run: pnpm test:integration
+      - name: E2E Tests
+        run: pnpm test:e2e
+      - name: Deploy
+        run: pnpm sst deploy --stage staging
