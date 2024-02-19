@@ -34,7 +34,10 @@ export const meta: MetaFunction = () => {
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   if (isbot(request.headers.get('user-agent') || '')) {
-    return new Response('bots allowed', { status: 200 });
+    return {
+      user: { score: 0 },
+      btcRate: '0',
+    };
   }
 
   const session = await getSession(request.headers.get('Cookie'));
